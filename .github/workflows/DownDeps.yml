@@ -1,0 +1,78 @@
+name: Download Deps
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - install/friendly-filenames.json
+      - Makefile
+      - 'wing/**'
+      - 'src/**'
+      - 'public/**'
+      - index.html
+      - vite.config.ts
+      - .npmrc
+      - package.json
+      - pnpm-lock.yaml
+
+jobs:
+  down-go-mod:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+
+      - name: Download wing vendor
+        run: |
+          git submodule update --init --recursive
+          export GOMODCACHE="${PWD}"/go-mod
+          cd dae-core && go mod download && cd ..
+          tar -zcf dae-core-go-mod.tar.gz go-mod/cache/download
+          go mod download
+          tar -zcf go-mod.tar.gz go-mod/cache/download
+        working-directory: wing
+        
+      - name: Github Release - go mod
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: false
+          prerelease: true
+          tag_name: OBS_Deps
+          files: |
+            wing/go-mod.tar.gz
+            wing/dae-core-go-mod.tar.gz
+
+  build-web:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: latest
+
+      - uses: actions/setup-node@v3
+        with:
+          cache: pnpm
+          node-version: latest
+
+      - name: Build
+        run: |
+          pnpm install
+          pnpm build
+          tar -zcf web.tar.gz dist
+
+      - name: Github Release - web
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: false
+          prerelease: true
+          tag_name: OBS_Deps
+          files: |
+            web.tar.gz
