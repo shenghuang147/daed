@@ -35,16 +35,6 @@ jobs:
           go mod download
           tar -zcf go-mod.tar.gz go-mod/cache/download
         working-directory: wing
-        
-      - name: Github Release - go mod
-        uses: softprops/action-gh-release@v1
-        with:
-          draft: false
-          prerelease: true
-          tag_name: OBS_Deps
-          files: |
-            wing/go-mod.tar.gz
-            wing/dae-core-go-mod.tar.gz
 
   build-web:
     runs-on: ubuntu-latest
@@ -68,11 +58,18 @@ jobs:
           pnpm build
           tar -zcf web.tar.gz dist
 
-      - name: Github Release - web
-        uses: softprops/action-gh-release@v1
-        with:
-          draft: false
-          prerelease: true
-          tag_name: OBS_Deps
-          files: |
-            web.tar.gz
+  Github-Release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+        - name: Github Release file
+          uses: softprops/action-gh-release@v1
+          with:
+            draft: false
+            prerelease: true
+            tag_name: OBS_Deps
+            files: |
+              web.tar.gz
+              wing/go-mod.tar.gz
+              wing/dae-core-go-mod.tar.gz
