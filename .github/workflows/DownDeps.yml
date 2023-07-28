@@ -17,7 +17,7 @@ on:
       - pnpm-lock.yaml
 
 jobs:
-  down-go-mod:
+  down-deps:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -36,18 +36,12 @@ jobs:
           tar -zcf go-mod.tar.gz go-mod/cache/download
         working-directory: wing
 
-  build-web:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v3
-
-      - uses: pnpm/action-setup@v2
+      - name: set pnpm
+        uses: pnpm/action-setup@v2
         with:
           version: latest
-
-      - uses: actions/setup-node@v3
+      - name: set node
+        uses: actions/setup-node@v3
         with:
           cache: pnpm
           node-version: latest
@@ -58,18 +52,13 @@ jobs:
           pnpm build
           tar -zcf web.tar.gz dist
 
-  Github-Release:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-        - name: Github Release file
-          uses: softprops/action-gh-release@v1
-          with:
-            draft: false
-            prerelease: true
-            tag_name: OBS_Deps
-            files: |
-              web.tar.gz
-              wing/go-mod.tar.gz
-              wing/dae-core-go-mod.tar.gz
+      - name: Github Release file
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: false
+          prerelease: true
+          tag_name: OBS_Deps
+          files: |
+            web.tar.gz
+            wing/go-mod.tar.gz
+            wing/dae-core-go-mod.tar.gz
