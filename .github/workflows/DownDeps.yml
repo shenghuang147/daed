@@ -15,7 +15,6 @@ on:
       - .npmrc
       - package.json
       - pnpm-lock.yaml
-      - .github/workflows/*.yaml
 
 jobs:
   down-go-mod:
